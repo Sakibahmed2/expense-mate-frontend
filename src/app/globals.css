@@ -45,3 +45,8 @@ select:focus {
   outline: none;
   border-color: #007bff;
 }
+
+/* Custom scrollbar styling */
+.styled-table tbody::-webkit-scrollbar {
+  display: none;
+}
