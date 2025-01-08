@@ -1,13 +1,23 @@
 "use client";
 
 import React from "react";
-import { useSelector } from "react-redux";
 import "@/styles/summary.css";
+import {
+  useDeleteExpensesMutation,
+  useGetExpensesQuery,
+} from "@/redux/api/expensesApi";
+import { Delete, Pencil } from "lucide-react";
+import Link from "next/link";
+import LoadingUI from "@/components/ui/LoadingUI";
+import { toast } from "sonner";
 
 const Summary = () => {
-  const expenses = useSelector((state) => state.expenses.expenses);
+  const { data, isLoading } = useGetExpensesQuery({});
+  const [deleteExpense] = useDeleteExpensesMutation();
 
-  console.log(expenses);
+  const expenses = data?.data;
+
+  if (isLoading) return <LoadingUI />;
 
   // Get unique dates from expenses
   const uniqueDates = [
@@ -29,12 +39,13 @@ const Summary = () => {
 
   const generateTable = () => {
     return uniqueDates.map((date) => {
-      const row = { date, categories: {} };
+      const row = { date, categories: {}, ids: {} };
 
       expenses.forEach((expense) => {
         const expenseDate = new Date(expense.date).toLocaleDateString();
         if (expenseDate === date) {
           row.categories[expense.category] = expense.amount;
+          row.ids[expense.category] = expense._id;
         }
       });
 
@@ -43,6 +54,20 @@ const Summary = () => {
   };
 
   const tableData = generateTable();
+
+  const handleDelete = async (id) => {
+    const toastId = toast.loading("Deleting expense...");
+    try {
+      const res = await deleteExpense(id).unwrap();
+
+      if (res?.success) {
+        toast.success("Expense deleted successfully", { id: toastId });
+      }
+    } catch (err) {
+      toast.error("Failed to delete expense", { id: toastId });
+      console.log(err);
+    }
+  };
 
   return (
     <div className="table-container">
@@ -61,7 +86,21 @@ const Summary = () => {
             <tr key={row.date}>
               <td>{row.date}</td>
               {categories.map((category) => (
-                <td key={category}>{row.categories[category] || ""}</td>
+                <td key={category}>
+                  <div className="icons-container">
+                    <Link href={`/summary/${row.ids[category]}`}>
+                      <Pencil size={25} className="edit-icon" />
+                    </Link>
+
+                    <Delete
+                      onClick={() => handleDelete(row.ids[category])}
+                      size={25}
+                      className="delete-icon"
+                    />
+                  </div>
+
+                  {row.categories[category] || "x"}
+                </td>
               ))}
             </tr>
           ))}

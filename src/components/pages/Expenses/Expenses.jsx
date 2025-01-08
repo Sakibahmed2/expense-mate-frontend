@@ -6,8 +6,11 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import "../../../styles/expenses.css";
+import { useCreateExpensesMutation } from "@/redux/api/expensesApi";
+import { toast } from "sonner";
 
 const Expenses = () => {
+  const [createExpense] = useCreateExpensesMutation();
   const [limitError, setLimitError] = useState("");
   const [expense, setExpense] = useState({
     category: "",
@@ -20,21 +23,34 @@ const Expenses = () => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  console.log(expenses);
-
   const totalExpense = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
-  console.log(totalExpense);
 
-  const handleAddExpense = () => {
-    if (
-      totalExpense > limits ||
-      totalExpense + Number(expense.amount) > limits
-    ) {
-      setLimitError("Total expense exceeded limit!");
-      return;
+  const handleAddExpense = async () => {
+    const toastId = toast.loading("Adding expense...");
+    try {
+      if (
+        totalExpense > limits ||
+        totalExpense + Number(expense.amount) > limits
+      ) {
+        setLimitError("Total expense exceeded limit!");
+        toast.error("Total expense exceeded limit!", { id: toastId });
+        return;
+      }
+      dispatch(addExpense({ ...expense, date: new Date().toLocaleString() }));
+      const res = await createExpense({
+        ...expense,
+        date: new Date().toLocaleString(),
+      }).unwrap();
+
+      if (res?.success) {
+        toast.success("Expense added successfully", { id: toastId });
+      }
+
+      setExpense({ category: "", purpose: "", amount: "" });
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to add expense", { id: toastId });
     }
-    dispatch(addExpense({ ...expense, date: new Date().toLocaleString() }));
-    setExpense({ category: "", purpose: "", amount: "" });
   };
 
   return (

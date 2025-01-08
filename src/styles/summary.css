@@ -4,7 +4,6 @@
   justify-content: center;
   align-items: center;
   padding: 2rem;
-  background-color: #f8f9fa;
 }
 
 .styled-table {
@@ -62,4 +61,37 @@
   font-weight: 600;
   padding: 10px 0px;
   background-color: lightblue;
+}
+
+.icons-container {
+  position: relative;
+  top: -10;
+  gap: 5px;
+  right: -50;
+}
+
+.edit-icon {
+  color: #007bff;
+  cursor: pointer;
+  transition: 0.2s ease all;
+  padding: 5px;
+}
+
+.edit-icon:hover {
+  background-color: #0057b335;
+  border-radius: 1px;
+  padding: 5px;
+}
+
+.delete-icon {
+  color: #dc3545;
+  cursor: pointer;
+  padding: 5px;
+  transition: 0.2s ease all;
+}
+
+.delete-icon:hover {
+  background-color: #dc354533;
+  border-radius: 1px;
+  padding: 5px;
 }
